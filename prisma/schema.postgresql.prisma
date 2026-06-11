@@ -1,0 +1,7 @@
+// Copia questo contenuto in schema.prisma quando passi a PostgreSQL in produzione.
+// Cambia solo il blocco datasource:
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }

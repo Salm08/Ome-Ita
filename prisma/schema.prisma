@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  COUPLE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  passwordHash       String
+  gender             Gender
+  age                Int
+  region             String
+  stato              String    @default("online")
+  role               UserRole  @default(USER)
+  isBanned           Boolean   @default(false)
+  bannedUntil        DateTime?
+  banReason          String?
+  emailVerified      Boolean   @default(false)
+  emailVerifyToken   String?   @unique
+  googleId           String?   @unique
+  preferRegionMatch  Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  reportsMade      Report[]        @relation("Reporter")
+  reportsReceived  Report[]        @relation("Reported")
+  bansReceived     Ban[]           @relation("BannedUser")
+  bansIssued       Ban[]           @relation("BannedBy")
+  moderationLogs   ModerationLog[]
+}
+
+model Report {
+  id          String   @id @default(cuid())
+  reason      String
+  description String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  reporterId String
+  reporter   User   @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+
+  reportedId String
+  reported   User   @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+}
+
+model GuestReport {
+  id             String   @id @default(cuid())
+  reason         String
+  description    String?
+  status         String   @default("pending")
+  reporterIp     String?
+  reporterUserId String?
+  reportedUserId String?
+  reportedIp     String?
+  partnerInfo    String?
+  createdAt      DateTime @default(now())
+}
+
+model Ban {
+  id        String    @id @default(cuid())
+  reason    String
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  bannedById String
+  bannedBy   User   @relation("BannedBy", fields: [bannedById], references: [id])
+}
+
+model IpBan {
+  id        String    @id @default(cuid())
+  ip        String    @unique
+  reason    String
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  bannedById String?
+}
+
+model ModerationLog {
+  id           String   @id @default(cuid())
+  action       String
+  details      String?
+  targetUserId String?
+  targetIp     String?
+  createdAt    DateTime @default(now())
+
+  adminId String
+  admin   User   @relation(fields: [adminId], references: [id])
+}
+
+model GuestSession {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  gender    Gender
+  region    String?
+  stato     String   @default("online")
+  createdAt DateTime @default(now())
+}

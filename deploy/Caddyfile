@@ -1,0 +1,7 @@
+# Sostituisci DOMINIO con il tuo (es. omeita.tech)
+# Copia in /etc/caddy/Caddyfile sul server
+
+DOMINIO {
+    encode gzip
+    reverse_proxy localhost:3000
+}
